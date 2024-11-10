@@ -402,7 +402,10 @@ static void exec_cmd_entry(DRunModeEntry *e, const char *path) {
   // terminal.
   gboolean terminal =
       g_key_file_get_boolean(e->key_file, e->action, "Terminal", NULL);
-  if (helper_execute_command(exec_path, fp, terminal, sn ? &context : NULL)) {
+  if (helper_execute_command_full(exec_path, fp, terminal, sn ? &context : NULL,
+                                  "{cmd}", fp, "{desktop_file_path}", e->path,
+                                  "{app_id}", e->app_id, "{desktop_id}",
+                                  e->desktop_id, (char *)0)) {
     char *drun_cach_path = g_build_filename(cache_dir, DRUN_CACHE_FILE, NULL);
     // Store it based on the unique identifiers (desktop_id).
     history_set(drun_cach_path, e->desktop_id);

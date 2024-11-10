@@ -72,7 +72,8 @@ void cmd_set_arguments(int argc, char **argv) {
   stored_argv = argv;
 }
 
-int helper_parse_setup(char *string, char ***output, int *length, ...) {
+static int helper_parse_setup_v(char *string, char ***output, int *length,
+                                va_list ap) {
   GError *error = NULL;
   GHashTable *h;
   h = g_hash_table_new(g_str_hash, g_str_equal);
@@ -80,8 +81,6 @@ int helper_parse_setup(char *string, char ***output, int *length, ...) {
   g_hash_table_insert(h, "{terminal}", config.terminal_emulator);
   g_hash_table_insert(h, "{ssh-client}", config.ssh_client);
   // Add list from variable arguments.
-  va_list ap;
-  va_start(ap, length);
   while (1) {
     char *key = va_arg(ap, char *);
     if (key == (char *)0) {
@@ -93,7 +92,6 @@ int helper_parse_setup(char *string, char ***output, int *length, ...) {
     }
     g_hash_table_insert(h, key, value);
   }
-  va_end(ap);
 
   char *res = helper_string_replace_if_exists_v(string, h);
   // Destroy key-value storage.
@@ -114,6 +112,13 @@ int helper_parse_setup(char *string, char ***output, int *length, ...) {
     g_error_free(error);
   }
   return FALSE;
+}
+int helper_parse_setup(char *string, char ***output, int *length, ...) {
+  va_list ap;
+  va_start(ap, length);
+  int retv = helper_parse_setup_v(string, output, length, ap);
+  va_end(ap);
+  return retv;
 }
 
 void helper_tokenize_free(rofi_int_matcher **tokens) {
@@ -1027,15 +1032,21 @@ gboolean helper_execute(const char *wd, char **args, const char *error_precmd,
 gboolean helper_execute_command(const char *wd, const char *cmd,
                                 gboolean run_in_term,
                                 RofiHelperExecuteContext *context) {
+  return helper_execute_command_full(wd, cmd, run_in_term, context, "{cmd}",
+                                     cmd, (char *)0);
+}
+
+static gboolean helper_execute_command_full_v(const char *wd, const char *cmd,
+                                              gboolean run_in_term,
+                                              RofiHelperExecuteContext *context,
+                                              va_list ap) {
   char **args = NULL;
   int argc = 0;
 
   if (run_in_term) {
-    helper_parse_setup(config.run_shell_command, &args, &argc, "{cmd}", cmd,
-                       (char *)0);
+    helper_parse_setup_v(config.run_shell_command, &args, &argc, ap);
   } else {
-    helper_parse_setup(config.run_command, &args, &argc, "{cmd}", cmd,
-                       (char *)0);
+    helper_parse_setup_v(config.run_command, &args, &argc, ap);
   }
 
   if (args == NULL) {
@@ -1063,10 +1074,19 @@ gboolean helper_execute_command(const char *wd, const char *cmd,
 
   return helper_execute(wd, args, "", cmd, context);
 }
+gboolean helper_execute_command_full(const char *wd, const char *cmd,
+                                     gboolean run_in_term,
+                                     RofiHelperExecuteContext *context, ...) {
+  va_list ap;
+  va_start(ap, context);
+  gboolean retv =
+      helper_execute_command_full_v(wd, cmd, run_in_term, context, ap);
+  va_end(ap);
+  return retv;
+}
 
 char *helper_get_theme_path(const char *file, const char **ext,
                             const char *parent_file) {
-
   char *filename = rofi_expand_path(file);
   g_debug("Opening theme, testing: %s\n", filename);
   if (g_path_is_absolute(filename)) {

@@ -331,6 +331,23 @@ gboolean helper_execute_command(const char *wd, const char *cmd,
                                 RofiHelperExecuteContext *context);
 
 /**
+ * @param wd The work directory (optional)
+ * @param cmd The cmd to execute
+ * @param run_in_term Indicate if command should be run in a terminal
+ * @param context The startup notification context, if any
+ * @param ... tuples of extra parameters the string can search/replace
+ *
+ * Execute command.
+ * If needed members of context are NULL, they will be filled.
+ * Pass {cmd} into the va-arg list.
+ *
+ * @returns FALSE On failure, TRUE on success
+ */
+gboolean helper_execute_command_full(const char *wd, const char *cmd,
+                                     gboolean run_in_term,
+                                     RofiHelperExecuteContext *context, ...);
+
+/**
  * @param file The file path
  * @param height The wanted height
  * Gets a surface from an svg path
