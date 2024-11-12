@@ -878,6 +878,10 @@ replaced at runtime:
 - `{ssh-client}`: the configured ssh client (see -ssh-client)
 - `{cmd}`: the command to execute
 - `{window}`: the window ID of the selected window (in `window-command`)
+- `{desktop_file_path}`: The absolute path to the desktop file launched
+- `{app_id}`: The desktop file's file name without `.desktop` suffix
+- `{desktop_id}`: The `{desktop_file_path}` but with all `/` replaced by `-`
+  (see https://specifications.freedesktop.org/desktop-entry-spec/latest/file-naming.html)
 
 It processes the string as follows: `{key}`
 is replaced by its value, if `{key}` is not set it is removed. If the `{key}`
