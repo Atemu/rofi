@@ -609,7 +609,7 @@ Example to run applications in a dedicated cgroup with systemd. Requires a
 shell to escape and interpolate the unit name correctly.
 
 ```bash
-"bash -c 'systemd-run --user --unit=app-rofi-\"\$(systemd-escape \"\$(basename \"{cmd}\")\")\"-\$RANDOM {cmd}'"
+"bash -c 'systemd-run --user --unit=app-rofi-\"\$(systemd-escape \"{app_id}\")\"-\$RANDOM {cmd}'"
 ```
 
 `-run-shell-command` *cmd*
